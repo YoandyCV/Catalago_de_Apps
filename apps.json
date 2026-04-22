@@ -1,4 +1,31 @@
 [
+        {
+        "id": "MovilManager",
+        "nombre": "Movil_Manager_2.2",
+        "descripcion": "Administra y controle su movil desde la comodidad de su PC",
+        "tamaño": "5.21 MB",
+        "urlDescarga": "/apps/Movil_Manager_2.2.7z",
+        "iconoEmoji": "",
+        "iconoUrl": "/apps/Movil_Manager.jpg",
+        "detalles": {
+            "version": "2.2",
+            "fecha": "2026-04-22",
+            "requisitos": "Android 4.0+Window",
+            "categorias": ["Herramientas", "Administracion, Remoto"],
+            "capturas": [
+                "/screenshots/MovilManager1.jpg",
+                "/screenshots/MovilManager2.jpg",
+                "/screenshots/MovilManager3.jpg",
+                "/screenshots/MovilManager4.jpg"
+            ],
+            "caracteristicas": [
+                "✔️ Control total",
+                "✔️ Administracion remota",
+                "✔️ Conexion Via TCP_IP y USB"
+            ]
+        }
+    },
+    
     {
         "id": "Inventario",
         "nombre": "Inventario v1.2",
