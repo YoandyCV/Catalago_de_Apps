@@ -119,13 +119,17 @@ async function loadApps() {
             return;
         }
         
-        // Obtener contadores reales en paralelo
+        // ============================================
+        // PARTE CRÍTICA: Obtener contadores REALES antes de renderizar
+        // ============================================
+        console.log('Obteniendo contadores reales desde Google Sheets...');
         const promesasContadores = apps.map(app => obtenerContadorReal(app.id));
         const contadoresReales = await Promise.all(promesasContadores);
         
-        // Guardar en localStorage
+        // Guardar en localStorage y mostrar en consola para debugging
         apps.forEach((app, i) => {
             localStorage.setItem(`count_${app.id}`, contadoresReales[i]);
+            console.log(`${app.id}: ${contadoresReales[i]} descargas`);
         });
         
         grid.innerHTML = '';
