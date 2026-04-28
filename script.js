@@ -1,7 +1,7 @@
 
 // CONFIGURACIÓN DEL CONTADOR
 // ============================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI8xdX1RDMHa3Dy86UK410123d2gEyZgWnuEhL0jpFiRL9DN8S55QCqVNO4glTXtEU/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqFmwQ0o_IOpD_0mvanoCviacUb0ToRvWhUv363srek0HqJuDPG4meEafc5exMhkec/exec';
 
 // ============================================
 // FUNCIONES JSONP
