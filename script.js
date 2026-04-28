@@ -4,50 +4,66 @@
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzI8xdX1RDMHa3Dy86UK410123d2gEyZgWnuEhL0jpFiRL9DN8S55QCqVNO4glTXtEU/exec';
 
 // ============================================
-// FUNCIONES PARA CONTADOR (conexión real a Google Sheets)
+// FUNCIONES JSONP
 // ============================================
+function peticionJSONP(url, callbackName, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const timeoutId = setTimeout(() => {
+            reject(new Error('Timeout JSONP'));
+            if (document.head.contains(script)) document.head.removeChild(script);
+            delete window[callbackName];
+        }, timeout);
+        
+        window[callbackName] = function(data) {
+            clearTimeout(timeoutId);
+            resolve(data);
+            delete window[callbackName];
+            if (document.head.contains(script)) document.head.removeChild(script);
+        };
+        
+        const separator = url.includes('?') ? '&' : '?';
+        script.src = `${url}${separator}callback=${callbackName}&t=${Date.now()}`;
+        script.onerror = () => {
+            clearTimeout(timeoutId);
+            reject(new Error('Error de red JSONP'));
+            delete window[callbackName];
+            if (document.head.contains(script)) document.head.removeChild(script);
+        };
+        document.head.appendChild(script);
+    });
+}
 
-/**
- * Obtiene el contador real desde la hoja de cálculo (modo GET)
- * @param {string} appId - ID de la aplicación
- * @returns {Promise<number>} - Número de descargas actual
- */
+// ============================================
+// CONTADOR (usando JSONP)
+// ============================================
 async function obtenerContadorReal(appId) {
     try {
-        const url = `${SCRIPT_URL}?app=${encodeURIComponent(appId)}&mode=get&t=${Date.now()}`;
-        const respuesta = await fetch(url);  // SIN mode: 'no-cors' para poder LEER la respuesta
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-        const texto = await respuesta.text();
-        const contador = parseInt(texto, 10);
-        if (isNaN(contador)) throw new Error('Respuesta no numérica');
-        return contador;
+        const url = `${SCRIPT_URL}?app=${encodeURIComponent(appId)}&mode=get`;
+        const callback = `jsonp_get_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        const data = await peticionJSONP(url, callback);
+        const contador = parseInt(data, 10);
+        return isNaN(contador) ? 0 : contador;
     } catch (error) {
         console.error(`Error obteniendo contador para ${appId}:`, error);
-        // Fallback: usar localStorage si hay error de red/CORS
         const local = localStorage.getItem(`count_${appId}`);
         return local ? parseInt(local, 10) : 0;
     }
 }
 
-/**
- * Incrementa el contador en la hoja de cálculo (modo INC)
- * @param {string} appId - ID de la aplicación
- * @returns {Promise<number>} - Nuevo número de descargas
- */
 async function incrementarContador(appId) {
     try {
-        const url = `${SCRIPT_URL}?app=${encodeURIComponent(appId)}&mode=inc&t=${Date.now()}`;
-        const respuesta = await fetch(url);  // SIN mode: 'no-cors'
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-        const nuevoContador = parseInt(await respuesta.text(), 10);
-        if (isNaN(nuevoContador)) throw new Error('Respuesta no numérica');
-        
-        // Guardar también en localStorage como respaldo
-        localStorage.setItem(`count_${appId}`, nuevoContador);
-        return nuevoContador;
+        const url = `${SCRIPT_URL}?app=${encodeURIComponent(appId)}&mode=inc`;
+        const callback = `jsonp_inc_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        const data = await peticionJSONP(url, callback);
+        const nuevoContador = parseInt(data, 10);
+        if (!isNaN(nuevoContador)) {
+            localStorage.setItem(`count_${appId}`, nuevoContador);
+            return nuevoContador;
+        }
+        throw new Error('Respuesta inválida');
     } catch (error) {
-        console.error(`Error al incrementar contador para ${appId}:`, error);
-        // Fallback local: incrementar solo en localStorage
+        console.error(`Error al incrementar ${appId}:`, error);
         const actual = localStorage.getItem(`count_${appId}`);
         const nuevo = (actual ? parseInt(actual, 10) : 0) + 1;
         localStorage.setItem(`count_${appId}`, nuevo);
@@ -56,26 +72,28 @@ async function incrementarContador(appId) {
 }
 
 // ============================================
-// MANEJADOR DE DESCARGA (usa la función anterior)
+// MANEJADOR DE DESCARGA
 // ============================================
 async function handleDl(id, url) {
-    console.log(`Descargando: ${id} desde ${url}`);
+    console.log(`Descargando: ${id}`);
     const nuevoValor = await incrementarContador(id);
     
-    // Actualizar el contador en la UI
     const countSpan = document.getElementById(`count-${id}`);
     if (countSpan && nuevoValor !== null) {
         countSpan.innerHTML = `⬇️ ${nuevoValor} descargas`;
     }
     
-    // Iniciar la descarga
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (url && url !== '#') {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        alert('❌ URL de descarga no disponible');
+    }
 }
 
 // ============================================
@@ -92,7 +110,6 @@ async function loadApps() {
     grid.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Sincronizando base de datos...</p></div>';
     
     try {
-        // 1. Obtener el catálogo desde apps.json
         const res = await fetch('apps.json');
         if (!res.ok) throw new Error(`No se pudo cargar apps.json: ${res.status}`);
         const apps = await res.json();
@@ -102,27 +119,26 @@ async function loadApps() {
             return;
         }
         
-        // 2. Obtener contadores REALES para todas las apps (en paralelo)
-        const promesasContadores = apps.map(app => obtenerContadorReal(app.id).catch(err => 0));
+        // Obtener contadores reales en paralelo
+        const promesasContadores = apps.map(app => obtenerContadorReal(app.id));
         const contadoresReales = await Promise.all(promesasContadores);
         
-        // 3. Limpiar contenedor
+        // Guardar en localStorage
+        apps.forEach((app, i) => {
+            localStorage.setItem(`count_${app.id}`, contadoresReales[i]);
+        });
+        
         grid.innerHTML = '';
         
-        // 4. Renderizar cada tarjeta
         for (let i = 0; i < apps.length; i++) {
             const app = apps[i];
-            if (!app.id || !app.nombre) {
-                console.warn('App inválida omitida:', app);
-                continue;
-            }
+            if (!app.id || !app.nombre) continue;
             
-            const descargas = contadoresReales[i]; // contador real desde la hoja
+            const descargas = contadoresReales[i];
             
             const card = document.createElement('div');
             card.className = 'app-card';
             
-            // Icono (imagen o emoji)
             let iconoHtml = '';
             if (app.iconoUrl && app.iconoUrl.trim() !== '') {
                 iconoHtml = `<img src="${escapeHtml(app.iconoUrl)}" alt="${escapeHtml(app.nombre)}" class="app-icon-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` +
@@ -131,7 +147,6 @@ async function loadApps() {
                 iconoHtml = `<div style="font-size:2.5rem; margin-bottom:1rem;">${escapeHtml(app.iconoEmoji || '⚙️')}</div>`;
             }
             
-            // Descripción corta para la tarjeta
             let descripcionCorta = app.descripcion || 'Sin descripción disponible';
             let tieneMasTexto = descripcionCorta.length > 80;
             if (tieneMasTexto) descripcionCorta = descripcionCorta.substring(0, 80) + '...';
@@ -155,33 +170,29 @@ async function loadApps() {
             grid.appendChild(card);
         }
         
-        // 5. Asignar eventos (descarga y detalles)
+        // Eventos de descarga
         document.querySelectorAll('.btn-dl').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = btn.getAttribute('data-id');
                 const url = btn.getAttribute('data-url');
-                if (url && url !== '#') {
-                    handleDl(id, url);
-                } else {
-                    alert('❌ URL de descarga no disponible');
-                }
+                handleDl(id, url);
             });
         });
         
+        // Eventos de detalles
         document.querySelectorAll('.btn-info').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const id = btn.getAttribute('data-id');
-                // Buscar la app completa en el array original
-                const appCompleta = apps.find(a => a.id === id);
-                if (appCompleta) {
-                    showAppDetails(appCompleta);
-                }
+                const res = await fetch('apps.json');
+                const appsData = await res.json();
+                const appCompleta = appsData.find(a => a.id === id);
+                if (appCompleta) showAppDetails(appCompleta);
             });
         });
         
-        console.log('Apps renderizadas correctamente con contadores reales');
+        console.log('Apps renderizadas correctamente');
         
     } catch (err) {
         console.error('Error en loadApps:', err);
@@ -190,7 +201,7 @@ async function loadApps() {
 }
 
 // ============================================
-// MODAL DE DETALLES (sin cambios importantes)
+// MODAL DE DETALLES
 // ============================================
 function showAppDetails(app) {
     const detalles = app.detalles || {
@@ -281,7 +292,7 @@ function showAppDetails(app) {
     document.body.appendChild(modal);
     setTimeout(() => modal.classList.add('active'), 10);
     
-    // Configurar carrusel si hay imágenes
+    // Carrusel
     if (screenshots.length > 0) {
         const carousel = modal.querySelector('.screenshots-carousel');
         const prevBtn = modal.querySelector('.carousel-prev');
@@ -339,12 +350,11 @@ function escapeHtml(str) {
 }
 
 // ============================================
-// INICIALIZACIÓN AL CARGAR LA PÁGINA
+// INICIALIZACIÓN
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM cargado correctamente');
     
-    // Menú lateral
     const menuBtn = document.getElementById('menuToggle');
     const side = document.getElementById('sidebar');
     if (menuBtn && side) {
@@ -359,6 +369,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Cargar apps (con contadores reales)
     loadApps();
 });
