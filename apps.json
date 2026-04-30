@@ -140,11 +140,12 @@
             "requisitos": "Android 4.4+",
             "categorias": ["Redes", "Utilidades"],
             "capturas": [
-                "/screenshots/signal_1.jpg",
-                "/screenshots/signal_2.jpg"
+                "/screenshots/Signal1.jpg",
+                "/screenshots/Signal2.jpg",
+                "/screenshots/Signal3.jpg"
             ],
             "caracteristicas": [
-                "✔️ Medición de señal",
+                "✔️ Medir señal",
                 "✔️ Orientación de antena",
                 "✔️ Datos en tiempo real",
                 "✔️ Gráficos de calidad"
@@ -266,7 +267,9 @@
             "requisitos": "Windows 7+",
             "categorias": ["Herramientas", "Electrónica"],
             "capturas": [
-                "/screenshots/cacharrero_1.jpg"
+                "/screenshots/CacharreroTool1.jpg",
+                "/CacharreroTool2.jpg",
+                "/CacharreroTool3.jpg"
             ],
             "caracteristicas": [
                 "✔️ Identificador de resistencias",
@@ -290,8 +293,7 @@
             "requisitos": "Windows 7+",
             "categorias": ["Referencia", "Construcción"],
             "capturas": [
-                "/screenshots/catalogo_1.jpg",
-                "/screenshots/catalogo_2.jpg"
+                "/screenshots/Catalago1"
             ],
             "caracteristicas": [
                 "✔️ Componentes rusos",
@@ -315,8 +317,8 @@
             "requisitos": "Android 5.0+",
             "categorias": ["Redes", "Utilidades"],
             "capturas": [
-                "/screenshots/4gswit_1.jpg",
-                "/screenshots/4gswit_2.jpg"
+                "/screenshots/SW1.jpg",
+                "/screenshots/Signal3.jpg"
             ],
             "caracteristicas": [
                 "✔️ Forzar 4G",
@@ -340,8 +342,9 @@
             "requisitos": "Android 4.4+",
             "categorias": ["Referencia", "Electrónica"],
             "capturas": [
-                "/screenshots/diagramas_1.jpg",
-                "/screenshots/diagramas_2.jpg"
+                "/screenshots/Diagramas1.jpg",
+                "/screenshots/Diagramas2.jpg",
+                "/screenshots/Diagramas3.jpg"
             ],
             "caracteristicas": [
                 "✔️ Ver diagramas",
@@ -365,8 +368,8 @@
             "requisitos": "Android 5.0+",
             "categorias": ["Herramientas", "PDF"],
             "capturas": [
-                "/screenshots/webpdf_1.jpg",
-                "/screenshots/webpdf_2.jpg"
+                "/screenshots/WebPDF1.jpg",
+                "/screenshots/WebPDF2.jpg"
             ],
             "caracteristicas": [
                 "✔️ Guardar web como PDF",
