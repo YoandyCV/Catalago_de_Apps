@@ -268,8 +268,8 @@
             "categorias": ["Herramientas", "Electrónica"],
             "capturas": [
                 "/screenshots/CacharreroTool1.jpg",
-                "/CacharreroTool2.jpg",
-                "/CacharreroTool3.jpg"
+                "/screenshots/CacharreroTool2.jpg",
+                "/screenshots/CacharreroTool3.jpg"
             ],
             "caracteristicas": [
                 "✔️ Identificador de resistencias",
@@ -293,7 +293,7 @@
             "requisitos": "Windows 7+",
             "categorias": ["Referencia", "Construcción"],
             "capturas": [
-                "/screenshots/Catalago1"
+                "/screenshots/Catalogo1.jpg"
             ],
             "caracteristicas": [
                 "✔️ Componentes rusos",
