@@ -223,30 +223,24 @@ function showAppDetails(app) {
     modal.className = 'modal';
     
     let carouselHtml = '';
-    if (screenshots.length > 0) {
-        carouselHtml = `
-            <div class="screenshots-carousel">
-                ${screenshots.map((src, idx) => `
-                    <div class="screenshot-item">
+if (screenshots.length > 0) {
+    carouselHtml = `
+        <div class="screenshots-carousel">
+            ${screenshots.map((src, idx) => `
+                <div class="screenshot-item">
+                    <a href="${escapeHtml(src)}" target="_blank" style="display:block; text-decoration:none;">
                         <img src="${escapeHtml(src)}" alt="Captura ${idx + 1}" class="screenshot-img" onerror="this.parentElement.innerHTML='<div class=\\'screenshot-placeholder\\'>📷<br>Sin imagen</div>'">
-                    </div>
-                `).join('')}
-            </div>
-            <div class="carousel-nav">
-                <button class="carousel-prev">◀</button>
-                <span class="carousel-counter">1 / ${screenshots.length}</span>
-                <button class="carousel-next">▶</button>
-            </div>
-        `;
-    } else {
-        carouselHtml = `
-            <div class="screenshots-placeholder">
-                <div class="placeholder-icon">📸</div>
-                <p>Capturas de pantalla próximamente</p>
-                <small>Pronto añadiremos imágenes de esta app</small>
-            </div>
-        `;
-    }
+                    </a>
+                </div>
+            `).join('')}
+        </div>
+        <div class="carousel-nav">
+            <button class="carousel-prev">◀</button>
+            <span class="carousel-counter">1 / ${screenshots.length}</span>
+            <button class="carousel-next">▶</button>
+        </div>
+    `;
+}
     
     const caracteristicasHtml = (detalles.caracteristicas || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
     
